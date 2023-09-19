@@ -3,8 +3,7 @@
 My mini projects will be uploaded here.
 
 ## My code climate badge
-933bc9b1e3ec45e0f77cd873205390c1313a08e5143e3f96687d0474a38bbce1
-![Code Climate](933bc9b1e3ec45e0f77cd873205390c1313a08e5143e3f96687d0474a38bbce1)
+<a href="https://codeclimate.com/github/Jerick0829/Cpan212-Project/maintainability"><img src="https://api.codeclimate.com/v1/badges/975b342c05161959f92d/maintainability" /></a>
 
 
 ## Table of Contents
