@@ -2,6 +2,10 @@
 
 My mini projects will be uploaded here.
 
+## My code climate badge
+933bc9b1e3ec45e0f77cd873205390c1313a08e5143e3f96687d0474a38bbce1
+
+
 ## Table of Contents
 
 - [About](#about)
