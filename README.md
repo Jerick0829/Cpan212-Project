@@ -1,6 +1,7 @@
 # Cpan 212 - Project
 
 My mini projects will be uploaded here.
+This project will be about a list of homework assigned to students per week.
 
 ## My code climate badge
 <a href="https://codeclimate.com/github/Jerick0829/Cpan212-Project/maintainability"><img src="https://api.codeclimate.com/v1/badges/975b342c05161959f92d/maintainability" /></a>
