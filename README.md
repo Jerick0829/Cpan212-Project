@@ -10,6 +10,9 @@ This project will be about a list of homework assigned to students per week.
 ## Table of Contents
 
 - [About](#about)
+
+the App component serves as the main component of your React application. It displays a list of classwork and includes two other components, FunctionalComponent and ClassComponent, which demonstrate the use of both functional and class components in React. ClassComponent has a button to increment a count, illustrating state management in class components, while FunctionalComponent simply displays a message passed as a prop. When you run your application, you'll see the classwork list along with the "Functional Component" and "Class Component" sections with their respective content and functionality.
+
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
