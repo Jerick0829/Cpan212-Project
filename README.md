@@ -4,6 +4,14 @@
 <a href="https://codeclimate.com/github/Jerick0829/Cpan212-Project/maintainability"><img src="https://api.codeclimate.com/v1/badges/975b342c05161959f92d/maintainability" /></a>
 
 
+
+## Travel Journal README
+
+
+## Table of Contents
+
+- [About](#about)
+
 Welcome to your travel journal! This journal is designed to be your trusted companion as you embark on your adventures and capture the essence of your travel experiences. Here's a quick guide to get you started:
 
 ## Getting Started
