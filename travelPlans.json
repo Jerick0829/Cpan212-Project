@@ -1,0 +1,50 @@
+[
+    {
+        "id": 1,
+        "destination": "Paris",
+        "date": "2023-12-25",
+        "traveler": "Alice"
+    },
+    {
+        "id": 2,
+        "destination": "Tokyo",
+        "date": "2023-11-30",
+        "traveler": "Bob"
+    },
+    {
+        "id": 3,
+        "destination": "London",
+        "date": "2023-12-10",
+        "traveler": "Charlie"
+    },
+    {
+        "id": 4,
+        "destination": "New York",
+        "date": "2023-11-15",
+        "traveler": "Diana"
+    },
+    {
+        "id": 5,
+        "destination": "Rome",
+        "date": "2023-12-03",
+        "traveler": "Eva"
+    },
+    {
+        "id": 6,
+        "destination": "Sydney",
+        "date": "2023-11-20",
+        "traveler": "Frank"
+    },
+    {
+        "id": 7,
+        "destination": "Cape Town",
+        "date": "2023-12-08",
+        "traveler": "Grace"
+    },
+    {
+        "id": 8,
+        "destination": "Moscow",
+        "date": "2023-11-25",
+        "traveler": "Henry"
+    }
+]
