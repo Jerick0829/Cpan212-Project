@@ -1,64 +1,105 @@
-const http = require('http');
-const { MongoClient } = require('mongodb');
+const express = require('express');
+const mongoose = require('mongoose');
+const { body, validationResult } = require('express-validator');
+const { TravelPlan } = require('./models/travelplan'); // Import the TravelPlan model
 
+const app = express();
 const PORT = 3000;
 const versionedEndpoint = '/api/v1/travel-plans';
-const connectionString = 'mongodb://localhost:27017/';
-const dbName = 'travelplanner';
-const collectionName = 'planner';
+const connectionString = 'mongodb://localhost:27017/travelplanner'; // Update with your MongoDB connection string
 
-const server = http.createServer((req, res) => {
-  if (req.method === 'GET' && req.url.startsWith(versionedEndpoint)) {
-    handleGetRequests(req, res);
-  } else {
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('Not Found');
-  }
-});
+app.use(express.json());
 
-let db;
-MongoClient.connect(connectionString, { useUnifiedTopology: true })
-  .then((client) => {
+// Connect to MongoDB via Mongoose
+mongoose.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
     console.log('Connected to MongoDB');
-    db = client.db(dbName);
   })
   .catch((err) => {
     console.error('Error connecting to MongoDB:', err);
   });
 
-async function handleGetRequests(req, res) {
-  const urlParams = new URL(req.url, `http://${req.headers.host}`).searchParams;
-  const destinationFilter = urlParams.get('destination');
-  const dateFilter = urlParams.get('date');
-  const page = parseInt(urlParams.get('page')) || 1;
-  const limit = parseInt(urlParams.get('limit')) || 10;
-
+// Handle GET requests for travel plans 
+app.get(versionedEndpoint, async (req, res) => {
   try {
-    const collection = db.collection(collectionName);
+    const { destination, date, page = 1, limit = 10 } = req.query;
 
     const query = {};
-    if (destinationFilter) {
-      query.destination = new RegExp(destinationFilter, 'i');
+    if (destination) {
+      query.destination = new RegExp(destination, 'i');
     }
-    if (dateFilter) {
-      query.date = dateFilter;
+    if (date) {
+      query.date = date;
     }
 
-    const totalCount = await collection.countDocuments(query);
-    const paginatedPlans = await collection
+    const totalCount = await TravelPlan.countDocuments(query);
+    const paginatedPlans = await TravelPlan
       .find(query)
       .skip((page - 1) * limit)
-      .limit(limit)
-      .toArray();
+      .limit(limit);
 
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ totalCount, paginatedPlans }));
+    res.status(200).json({ totalCount, paginatedPlans });
   } catch (err) {
-    res.writeHead(500, { 'Content-Type': 'text/plain' });
-    res.end('Internal Server Error'); 
+    res.status(500).send('Internal Server Error');
   }
-}
+});
 
-server.listen(PORT, () => {
+// Add a new travel plan with validation
+app.post(versionedEndpoint, [
+  body('destination').notEmpty().isString(),
+  body('date').notEmpty().isISO8601(),
+  body('traveler').notEmpty().isString(),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    const newTravelPlan = new TravelPlan(req.body);
+    await newTravelPlan.save();
+    res.status(201).json({ message: 'Travel plan added successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to add travel plan' });
+  }
+});
+// UPDATE a travel plan
+app.put(`${versionedEndpoint}/:id`, [
+  body('destination').notEmpty().isString(),
+  body('date').notEmpty().isISO8601(),
+  body('traveler').notEmpty().isString(),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    const updatedPlan = await TravelPlan.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedPlan) {
+      return res.status(404).json({ message: 'Travel plan not found' });
+    }
+    res.status(200).json({ message: 'Travel plan updated successfully', updatedPlan });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update travel plan' });
+  }
+});
+
+// DELETE a travel plan
+app.delete(`${versionedEndpoint}/:id`, async (req, res) => {
+  try {
+    const deletedPlan = await TravelPlan.findByIdAndDelete(req.params.id);
+    if (!deletedPlan) {
+      return res.status(404).json({ message: 'Travel plan not found' });
+    }
+    res.status(200).json({ message: 'Travel plan deleted successfully', deletedPlan });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete travel plan' });
+  }
+});
+
+
+// Start the server
+app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}/`);
 });
