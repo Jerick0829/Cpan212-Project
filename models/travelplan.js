@@ -13,6 +13,10 @@ const travelPlanSchema = new mongoose.Schema({
   traveler: {
     type: String,
     required: true
+  },
+  posted_by: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User' // Reference to the User model
   }
 });
 
@@ -20,4 +24,3 @@ const travelPlanSchema = new mongoose.Schema({
 const TravelPlan = mongoose.model('TravelPlan', travelPlanSchema);
 
 module.exports = { TravelPlan };
- 

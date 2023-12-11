@@ -1,35 +1,57 @@
 const express = require('express');
 const router = express.Router();
-const passport = require('../configuration/passportConfiguration');
 const User = require('../models/user');
-const bcrypt = require('bcrypt'); // Import bcrypt
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
+// Secret key for JWT token signing
+const secretKey = 'mySecretPassphrase123'; // Replace with your secret key
 
-router.post('/register', async (req, res) => {
-    const { username, email, password } = req.body;
-  
-    try {
-      // Hash the password before saving it to the database
-      const hashedPassword = await bcrypt.hash(password, 10); // Hash password with 10 salt rounds
-  
-      const newUser = new User({ username, email, password: hashedPassword });
-      await newUser.save();
-  
-      res.status(201).json({ message: 'User registered successfully', user: newUser });
-    } catch (err) {
-      res.status(500).json({ message: 'Failed to register user' });
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid password' });
+    }
+
+    // Create JWT token
+    const token = jwt.sign({ userId: user._id, email: user.email }, secretKey, { expiresIn: '1h' });
+
+    res.status(200).json({ token });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to login' });
+  }
+});
+
+// Middleware to verify JWT token
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized: No token provided' });
+  }
+
+  jwt.verify(token, secretKey, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: 'Unauthorized: Invalid token' });
+    }
+    req.user = decoded;
+    next();
   });
+};
 
-router.post('/login', passport.authenticate('local', {
-  successRedirect: '/dashboard',
-  failureRedirect: '/login',
-  failureFlash: true
-}));
-
-router.get('/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
+// Protected route example
+router.get('/protected', verifyToken, (req, res) => {
+  res.status(200).json({ message: 'Access granted to protected route', user: req.user });
 });
 
 module.exports = router;
