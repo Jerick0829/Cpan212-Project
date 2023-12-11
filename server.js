@@ -1,16 +1,32 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const passport = require('./configuration/passportConfiguration');
+const userRoutes = require('./controllers/userRoutes');
+const User = require('./models/user');
 const { body, validationResult } = require('express-validator');
 const { TravelPlan } = require('./models/travelplan'); // Import the TravelPlan model
+
 
 const app = express();
 const PORT = 3000;
 const versionedEndpoint = '/api/v1/travel-plans';
-const connectionString = 'mongodb://localhost:27017/travelplanner'; // Update with your MongoDB connection string
+const connectionString = 'mongodb://localhost:27017/travelplanner'; 
 
+
+// Express Middleware
 app.use(express.json());
 
-// Connect to MongoDB via Mongoose
+// Session setup for Passport.js 
+app.use(session({
+  secret: 'FitnessTrackerSecret',
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// MongoDB Connection
 mongoose.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('Connected to MongoDB');
@@ -19,9 +35,22 @@ mongoose.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: 
     console.error('Error connecting to MongoDB:', err);
   });
 
-// Handle GET requests for travel plans 
-app.get(versionedEndpoint, async (req, res) => {
+// User Routes
+app.use('/user', userRoutes);
+
+// Handle GET requests for travel plans with validation
+app.get(versionedEndpoint, [
+  body('destination').optional().isString(),
+  body('date').optional().isISO8601(),
+  body('page').optional().isInt({ min: 1 }),
+  body('limit').optional().isInt({ min: 1 }),
+], async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
     const { destination, date, page = 1, limit = 10 } = req.query;
 
     const query = {};
@@ -63,6 +92,7 @@ app.post(versionedEndpoint, [
     res.status(500).json({ message: 'Failed to add travel plan' });
   }
 });
+
 // UPDATE a travel plan
 app.put(`${versionedEndpoint}/:id`, [
   body('destination').notEmpty().isString(),
@@ -97,8 +127,7 @@ app.delete(`${versionedEndpoint}/:id`, async (req, res) => {
     res.status(500).json({ message: 'Failed to delete travel plan' });
   }
 });
-
-
+ 
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}/`);
